@@ -1,4 +1,6 @@
 from rest_framework import viewsets
+from rest_framework import generics
+from .pagination import CustomPageNumberPagination
 from .models import Users, Posts, Comments, Media, Likes, Follows, RefreshTokens
 from .serializers import UsersSerializer, PostsSerializer, CommentsSerializer, MediaSerializer, LikesSerializer, FollowsSerializer, RefreshTokensSerializer
 from rest_framework.permissions import IsAuthenticated
@@ -39,3 +41,7 @@ class FollowsViewSet(viewsets.ModelViewSet):
 class RefreshTokensViewSet(viewsets.ModelViewSet):
     queryset = RefreshTokens.objects.all()
     serializer_class = RefreshTokensSerializer
+
+class PostListAPIView(generics.ListAPIView):
+    queryset = Posts.objects.all().order_by('-created_at')
+    serializer_class = PostSerializer
