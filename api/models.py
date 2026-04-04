@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.conf import settings
 
 class MyUserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
@@ -42,7 +43,7 @@ class Users(AbstractBaseUser):
 
 # Остальные модели оставляем как есть, так как они ссылаются на твою таблицу
 class Posts(models.Model):
-    author = models.ForeignKey('Users', models.DO_NOTHING)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING)
     caption = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -52,7 +53,7 @@ class Posts(models.Model):
 
 class Comments(models.Model):
     post = models.ForeignKey('Posts', models.DO_NOTHING)
-    author = models.ForeignKey('Users', models.DO_NOTHING)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING)
     text = models.TextField()
     created_at = models.DateTimeField(blank=True, null=True)
 
@@ -73,8 +74,8 @@ class Media(models.Model):
         db_table = 'media'
 
 class Follows(models.Model):
-    follower = models.ForeignKey('Users', models.DO_NOTHING, db_column='follower_id')
-    followee = models.ForeignKey('Users', models.DO_NOTHING, related_name='follows_followee_set', db_column='followee_id')
+    follower = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING, db_column='follower_id')
+    followee = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING, related_name='follows_followee_set', db_column='followee_id')
     created_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
@@ -83,7 +84,7 @@ class Follows(models.Model):
         unique_together = (('follower', 'followee'),)
 
 class Likes(models.Model):
-    user = models.ForeignKey('Users', models.DO_NOTHING, db_column='user_id')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING, db_column='user_id')
     post = models.ForeignKey('Posts', models.DO_NOTHING, db_column='post_id')
     created_at = models.DateTimeField(blank=True, null=True)
 
@@ -93,7 +94,7 @@ class Likes(models.Model):
         unique_together = (('user', 'post'),)
 
 class RefreshTokens(models.Model):
-    user = models.ForeignKey('Users', models.DO_NOTHING)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING)
     jti = models.CharField(unique=True, max_length=64)
     revoked = models.BooleanField(blank=True, null=True)
     expires_at = models.DateTimeField()
