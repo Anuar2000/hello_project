@@ -35,6 +35,8 @@ class Users(AbstractBaseUser):
     class Meta:
         managed = True
         db_table = 'users'
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
 
     def has_perm(self, perm, obj=None): return True
     def has_module_perms(self, app_label): return True
@@ -50,6 +52,8 @@ class Posts(models.Model):
     class Meta:
         managed = True
         db_table = 'posts'
+        verbose_name = 'Post'
+        verbose_name_plural = 'Posts'
 
 class Comments(models.Model):
     post = models.ForeignKey('Posts', models.DO_NOTHING)
@@ -60,6 +64,8 @@ class Comments(models.Model):
     class Meta:
         managed = True
         db_table = 'comments'
+        verbose_name = 'Comment'
+        verbose_name_plural = 'Comments'
 
 class Media(models.Model):
     post = models.ForeignKey('Posts', models.DO_NOTHING)
@@ -72,6 +78,8 @@ class Media(models.Model):
     class Meta:
         managed = True
         db_table = 'media'
+        verbose_name = 'Media'
+        verbose_name_plural = 'Media'
 
 class Follows(models.Model):
     follower = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING, db_column='follower_id')
@@ -82,6 +90,8 @@ class Follows(models.Model):
         managed = True
         db_table = 'follows'
         unique_together = (('follower', 'followee'),)
+        verbose_name = 'Follow'
+        verbose_name_plural = 'Follows'
 
 class Likes(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING, db_column='user_id')
@@ -92,6 +102,8 @@ class Likes(models.Model):
         managed = True
         db_table = 'likes'
         unique_together = (('user', 'post'),)
+        verbose_name = 'Like'
+        verbose_name_plural = 'Likes'
 
 class RefreshTokens(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, models.DO_NOTHING)
@@ -102,3 +114,5 @@ class RefreshTokens(models.Model):
     class Meta:
         managed = True
         db_table = 'refresh_tokens'
+        verbose_name = 'RefreshToken'
+        verbose_name_plural = 'RefreshTokens'

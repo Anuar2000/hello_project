@@ -1,10 +1,12 @@
 from django.contrib import admin
-from .models import User, Post, Comment, Like, Follow, Media, RefreshToken
+from .models import Users, Posts, Comments, Likes, Follows, Media, RefreshTokens
 
-admin.site.register(User)
-admin.site.register(Post)
-admin.site.register(Comment)
-admin.site.register(Like)
-admin.site.register(Follow)
+admin.site.register(Users)
+admin.site.register(Posts)
+admin.site.register(Comments)
+admin.site.register(Likes)
+admin.site.register(Follows)
 admin.site.register(Media)
-admin.site.register(RefreshToken)
+admin.site.register(RefreshTokens)
+
+#все четко отлично, удалил старый. теперь когда все готово, нужно приступить к следующей задаче. задача такова, 
