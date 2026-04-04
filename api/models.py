@@ -32,7 +32,7 @@ class Users(AbstractBaseUser):
     REQUIRED_FIELDS = ['email']
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'users'
 
     def has_perm(self, perm, obj=None): return True
@@ -47,7 +47,7 @@ class Posts(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'posts'
 
 class Comments(models.Model):
@@ -57,7 +57,7 @@ class Comments(models.Model):
     created_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'comments'
 
 class Media(models.Model):
@@ -69,7 +69,7 @@ class Media(models.Model):
     order_idx = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'media'
 
 class Follows(models.Model):
@@ -78,7 +78,7 @@ class Follows(models.Model):
     created_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'follows'
         unique_together = (('follower', 'followee'),)
 
@@ -88,7 +88,7 @@ class Likes(models.Model):
     created_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'likes'
         unique_together = (('user', 'post'),)
 
@@ -99,5 +99,5 @@ class RefreshTokens(models.Model):
     expires_at = models.DateTimeField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'refresh_tokens'
