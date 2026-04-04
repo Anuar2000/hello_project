@@ -3,14 +3,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
+from rest_framework import status
 
 # ИМПОРТ МОДЕЛЕЙ
 # SystemUser — стандартная модель Django для авторизации (с хешированием)
 # MyUser — твоя кастомная модель из models.py
 from django.contrib.auth.models import User as SystemUser
 from .models import Users as MyUser, Posts, Comments, Media, Likes, Follows, RefreshTokens
-
-# ИМПОРТ СЕРИАЛИЗАТОРОВ
+from .models import Users
 from .serializers import (
     UsersSerializer, PostsSerializer, CommentsSerializer, 
     MediaSerializer, LikesSerializer, FollowsSerializer, 
@@ -21,35 +21,60 @@ from .pagination import CustomPageNumberPagination
 
 # --- РЕГИСТРАЦИЯ ---
 class RegisterView(APIView):
+    """
+    Эндпоинт для регистрации новых пользователей.
+    Использует кастомную модель Users и MyUserManager.
+    """
     permission_classes = [AllowAny]
+
     def post(self, request):
+        # Получаем данные из запроса (Android отправляет их в теле JSON)
         username = request.data.get('username')
         password = request.data.get('password')
-        email = request.data.get('email', '')
+        email = request.data.get('email')
 
-        if not username or not password:
-            return Response({"error": "Username and password required"}, status=status.HTTP_400_BAD_REQUEST)
+        # 1. Проверка на наличие всех обязательных полей
+        if not username or not password or not email:
+            return Response(
+                {"error": "Необходимо заполнить все поля: username, email, password"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # Проверка существования в системной таблице
-        if SystemUser.objects.filter(username=username).exists():
-            return Response({"error": "User already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        # 2. Проверка уникальности username
+        if Users.objects.filter(username=username).exists():
+            return Response(
+                {"error": "Пользователь с таким логином уже зарегистрирован"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # 3. Проверка уникальности email
+        if Users.objects.filter(email=email).exists():
+            return Response(
+                {"error": "Пользователь с таким email уже зарегистрирован"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        # 1. Создаем системного юзера (пароль будет автоматически захеширован)
-        SystemUser.objects.create_user(
-            username=username, 
-            password=password, 
-            email=email
-        )
-
-        # 2. Создаем запись в твоей таблице (MyUser)
-        MyUser.objects.create(
-            username=username,
-            email=email,
-            password=password 
-        )
-
-        return Response({"message": "Success! User created in both tables."}, status=status.HTTP_201_CREATED)
-
+        try:
+            # 4. Создание пользователя через твой кастомный менеджер
+            # Это захеширует пароль и сохранит запись в таблицу 'users'
+            user = Users.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
+            
+            return Response(
+                {"message": "Регистрация успешно завершена!"}, 
+                status=status.HTTP_201_CREATED
+            )
+            
+        except Exception as e:
+            # Если что-то пойдет не так на уровне БД, мы увидим текст ошибки
+            return Response(
+                {"error": f"Ошибка при сохранении в базу данных: {str(e)}"}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        ы
 # --- ПОСТЫ ---
 class PostsViewSet(viewsets.ModelViewSet):
     queryset = Posts.objects.all()
