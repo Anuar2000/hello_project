@@ -17,14 +17,14 @@ router.register(r'follows', FollowsViewSet)
 router.register(r'refresh_tokens', RefreshTokensViewSet)
 
 urlpatterns = [
-    # Все стандартные вьюсеты (посты, лайки и т.д.)
-    path('', include(router.urls)),
-
     # 1. РЕГИСТРАЦИЯ: тот самый путь, который создаст юзера с хешем
     path('register/', RegisterView.as_view(), name='register'),
 
     # 2. ЛОГИН: этот эндпоинт проверит пароль и выдаст Access/Refresh токены
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+
+    # Все стандартные вьюсеты (посты, лайки и т.д.)
+    path('', include(router.urls)),
     
     # Обновление токена (на будущее)
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
