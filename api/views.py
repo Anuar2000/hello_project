@@ -5,9 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 
-# ИМПОРТ МОДЕЛЕЙ
-# SystemUser — стандартная модель Django для авторизации (с хешированием)
-# MyUser — твоя кастомная модель из models.py
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from django.contrib.auth.models import User as SystemUser
 from .models import Users as MyUser, Posts, Comments, Media, Likes, Follows, RefreshTokens
 from .models import Users
@@ -74,8 +74,33 @@ class RegisterView(APIView):
                 {"error": f"Ошибка при сохранении в базу данных: {str(e)}"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        ы
-# --- ПОСТЫ ---
+        
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        if not username or not password:
+            return Response({"error": "Введите логин и пароль"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # authenticate проверит хеш пароля в твоей таблице 'users'
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            # Генерация токенов для Android
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "username": user.username,
+                "message": "Вход выполнен успешно"
+            }, status=status.HTTP_200_OK)
+        else:
+            # Если юзер не найден или пароль не совпал
+            return Response({"error": "Неверный логин или пароль"}, status=status.HTTP_401_UNAUTHORIZED)
+
 class PostsViewSet(viewsets.ModelViewSet):
     queryset = Posts.objects.all()
     serializer_class = PostSerializer
