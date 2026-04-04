@@ -1,10 +1,10 @@
 from django.contrib import admin
-from .models import Users, Posts, Comments, Likes, Follows, Media, RefreshTokens
+from .models import User, Post, Comment, Like, Follow, Media, RefreshToken
 
-admin.site.register(Users)
-admin.site.register(Posts)
-admin.site.register(Comments)
-admin.site.register(Likes)
-admin.site.register(Follows)
+admin.site.register(User)
+admin.site.register(Post)
+admin.site.register(Comment)
+admin.site.register(Like)
+admin.site.register(Follow)
 admin.site.register(Media)
-admin.site.register(RefreshTokens)
+admin.site.register(RefreshToken)
