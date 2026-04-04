@@ -74,7 +74,7 @@ class RegisterView(APIView):
                 {"error": f"Ошибка при сохранении в базу данных: {str(e)}"}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -82,24 +82,19 @@ class LoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        if not username or not password:
-            return Response({"error": "Введите логин и пароль"}, status=status.HTTP_400_BAD_REQUEST)
+        # Ищем юзера напрямую в твоей таблице
+        user = Users.objects.filter(username=username).first()
 
-        # authenticate проверит хеш пароля в твоей таблице 'users'
-        user = authenticate(username=username, password=password)
-
-        if user is not None:
-            # Генерация токенов для Android
+        # Проверяем пароль вручную через встроенный метод модели
+        if user and user.check_password(password):
             refresh = RefreshToken.for_user(user)
             return Response({
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
-                "username": user.username,
-                "message": "Вход выполнен успешно"
+                "username": user.username
             }, status=status.HTTP_200_OK)
-        else:
-            # Если юзер не найден или пароль не совпал
-            return Response({"error": "Неверный логин или пароль"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        return Response({"error": "Неверный логин или пароль"}, status=status.HTTP_401_UNAUTHORIZED)
 
 class PostsViewSet(viewsets.ModelViewSet):
     queryset = Posts.objects.all()
