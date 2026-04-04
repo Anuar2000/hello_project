@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
     UsersViewSet, PostsViewSet, CommentsViewSet, 
     MediaViewSet, LikesViewSet, FollowsViewSet, 
-    RefreshTokensViewSet, RegisterView # Не забудь импортировать RegisterView, который мы создали
+    RefreshTokensViewSet, RegisterView
 )
 
 router = DefaultRouter()
@@ -17,15 +17,11 @@ router.register(r'follows', FollowsViewSet)
 router.register(r'refresh_tokens', RefreshTokensViewSet)
 
 urlpatterns = [
-    # 1. РЕГИСТРАЦИЯ: тот самый путь, который создаст юзера с хешем
+    # Приоритетные пути
     path('register/', RegisterView.as_view(), name='register'),
-
-    # 2. ЛОГИН: этот эндпоинт проверит пароль и выдаст Access/Refresh токены
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-
-    # Все стандартные вьюсеты (посты, лайки и т.д.)
-    path('', include(router.urls)),
-    
-    # Обновление токена (на будущее)
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # Все вьюсеты
+    path('', include(router.urls)),
 ]
