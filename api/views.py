@@ -5,6 +5,10 @@ from .models import Users, Posts, Comments, Media, Likes, Follows, RefreshTokens
 from .serializers import UsersSerializer, PostsSerializer, CommentsSerializer, MediaSerializer, LikesSerializer, FollowsSerializer, RefreshTokensSerializer
 from rest_framework.permissions import IsAuthenticated
 from .serializers import PostSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth.models import User
 
 class PostsViewSet(viewsets.ModelViewSet):
     queryset = Posts.objects.all()
@@ -45,3 +49,21 @@ class RefreshTokensViewSet(viewsets.ModelViewSet):
 class PostListAPIView(generics.ListAPIView):
     queryset = Posts.objects.all().order_by('-created_at')
     serializer_class = PostSerializer
+
+class RegisterView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not username or not password:
+            return Response({"error": "Логин и пароль обязательны"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(username=username).exists():
+            return Response({"error": "Пользователь с таким именем уже существует"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # ВОТ ТУТ МАГИЯ: create_user автоматически хеширует пароль
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.save()
+
+        return Response({"message": "Пользователь успешно создан"}, status=status.HTTP_201_CREATED)
