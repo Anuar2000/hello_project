@@ -42,6 +42,7 @@ class Users(AbstractBaseUser):
     def has_module_perms(self, app_label): return True
     @property
     def is_staff(self): return True
+    pass
 
 # Остальные модели оставляем как есть, так как они ссылаются на твою таблицу
 class Posts(models.Model):

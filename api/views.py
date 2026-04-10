@@ -81,18 +81,17 @@ class LoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
+        
+        print(f"DEBUG: Пытаемся войти: {username}, пароль: {password}") # Посмотри, что приходит
 
-        # Ищем юзера напрямую в твоей таблице
         user = Users.objects.filter(username=username).first()
-
-        # Проверяем пароль вручную через встроенный метод модели
-        if user and user.check_password(password):
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-                "username": user.username
-            }, status=status.HTTP_200_OK)
+        
+        if user:
+            isValid = user.check_password(password)
+            print(f"DEBUG: Пользователь найден. Пароль верный? {isValid}")
+            if isValid:
+                refresh = RefreshToken.for_user(user)
+                return Response({ ... }, status=status.HTTP_200_OK)
         
         return Response({"error": "Неверный логин или пароль"}, status=status.HTTP_401_UNAUTHORIZED)
 

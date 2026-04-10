@@ -12,7 +12,8 @@ class PostSerializer(serializers.ModelSerializer):
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
-        fields = '__all__'
+        fields = ['id', 'username', 'email', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
 
 class PostsSerializer(serializers.ModelSerializer):
     class Meta:
