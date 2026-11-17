@@ -60,7 +60,7 @@
         <li>Қалған әр сағатқа бір іс-әрекет таңда. Бос жол қалдырма.</li>
         <li>00:00–06:00 — ұйқы, ол автоматты түрде есептеледі.</li>
         <li>Уақыты — 5 минут. Соңында «Аяқтау» бас.</li>
-        <li>Ұпайыңды оқытушыға көрсет.</li>
+        <li>Нәтижең оқытушыға автоматты түрде жіберіледі.</li>
       </ol>
       <p class="note">Ұпай ережелері ойын соңында ашылады — өз біліміңмен жоспарла.</p>
     </div>
@@ -88,6 +88,7 @@
       <div class="big" id="rScore"></div>
       <div class="note">ұпай / 16</div>
       <div class="level" id="rLevel"></div>
+      <div class="note" id="rSent" style="margin-top:12px"></div>
     </div>
     <div class="card">
       <h2>Ұпай қалай есептелді</h2>
@@ -230,9 +231,24 @@ function showResult() {
   }).join("");
 
   show("result");
+  sendResult(res.total, lvl.textContent);
 }
 
-// 6. Экрандарды ауыстыру
+// 6. Нәтижені Google Формаға жіберу
+function sendResult(total, level) {
+  const data = new FormData();
+  data.append("entry.1254191335", playerName);
+  data.append("entry.861485292", total);
+  data.append("entry.1646185447", level);
+  const status = document.getElementById("rSent");
+  status.textContent = "Нәтиже жіберілуде...";
+  fetch("https://docs.google.com/forms/d/e/1FAIpQLSfeQ_o3ZNU2HozFkLM22JjQqGi7zvipOjD_BdYHsN8ojLl5ZQ/formResponse",
+        { method: "POST", mode: "no-cors", body: data })
+    .then(() => status.textContent = "✓ Нәтиже оқытушыға жіберілді")
+    .catch(() => status.textContent = "Нәтиже жіберілмеді — ұпайыңды оқытушыға көрсет");
+}
+
+// 7. Экрандарды ауыстыру
 function show(id) {
   ["start", "plan", "result"].forEach(s => document.getElementById(s).classList.toggle("hidden", s !== id));
   window.scrollTo(0, 0);
