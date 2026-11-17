@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Менің Smart күнім</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root { --red:#CD2E3A; --blue:#0047A0; --ink:#1d1d1f; --muted:#6b6b70; --line:#e6e6ea; --bg:#f6f6f8; --ok:#1a8f4c; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Noto Sans",system-ui,sans-serif; background:var(--bg); color:var(--ink); }
+  .wrap { max-width:520px; margin:0 auto; padding:20px 16px 40px; }
+  .card { background:#fff; border-radius:18px; padding:20px; box-shadow:0 2px 12px rgba(0,0,0,.05); margin-bottom:16px; }
+  h1 { font-size:28px; margin:6px 0 4px; line-height:1.15; }
+  h2 { font-size:18px; margin:0 0 10px; }
+  .tag { display:inline-block; font-size:12px; font-weight:600; color:#fff; background:linear-gradient(90deg,var(--red),var(--blue)); padding:4px 10px; border-radius:99px; }
+  p, li { font-size:15px; line-height:1.5; }
+  ol { padding-left:20px; margin:8px 0; }
+  input[type=text] { width:100%; font:inherit; font-size:17px; padding:12px 14px; border:1.5px solid var(--line); border-radius:12px; outline:none; }
+  input[type=text]:focus { border-color:var(--blue); }
+  button { font:inherit; font-weight:600; font-size:17px; border:0; border-radius:12px; padding:14px; width:100%; cursor:pointer; background:var(--blue); color:#fff; }
+  button.ghost { background:transparent; color:var(--blue); font-size:14px; padding:8px; }
+  .hidden { display:none; }
+  .top { position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0; display:flex; justify-content:space-between; align-items:center; }
+  .timer { font-weight:800; font-size:20px; color:var(--blue); }
+  .timer.late { color:var(--red); }
+  .row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); }
+  .row:last-child { border-bottom:0; }
+  .time { width:96px; flex:none; font-size:14px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  select { flex:1; font:inherit; font-size:15px; padding:10px; border:1.5px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); }
+  select.empty { border-color:#f2c4c8; background:#fff7f8; }
+  .fixed { flex:1; padding:10px; border-radius:10px; background:#eef3fb; color:var(--blue); font-weight:600; font-size:15px; }
+  .note { font-size:13px; color:var(--muted); }
+  .score { text-align:center; }
+  .score .name { font-size:18px; font-weight:600; }
+  .score .big { font-size:84px; font-weight:800; line-height:1; margin:10px 0 2px; color:var(--blue); }
+  .score .level { display:inline-block; margin-top:8px; padding:6px 14px; border-radius:99px; font-weight:700; color:#fff; }
+  .rule { display:flex; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px; }
+  .rule:last-child { border-bottom:0; }
+  .pts { font-weight:800; white-space:nowrap; }
+  .plus { color:var(--ok); } .minus { color:var(--red); } .zero { color:#b0b0b5; }
+  .why { display:block; font-size:12px; color:var(--muted); margin-top:2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 1. Бастапқы экран -->
+  <div id="start">
+    <div class="card">
+      <span class="tag">Оңтүстік Корея · Smart Student</span>
+      <h1>Менің Smart күнім</h1>
+      <p>Ертеңгі оқу күніңді жоспарла және ұпай жина. Ең көп ұпай жинаған — сабақтың Smart Student-ы!</p>
+    </div>
+    <div class="card">
+      <h2>Нұсқаулық</h2>
+      <ol>
+        <li>Атыңды жаз да, «Бастау» бас.</li>
+        <li>Ертең — оқу күні, сабақ 9:00–14:00 (ол толтырылған).</li>
+        <li>Қалған әр сағатқа бір іс-әрекет таңда. Бос жол қалдырма.</li>
+        <li>00:00–06:00 — ұйқы, ол автоматты түрде есептеледі.</li>
+        <li>Уақыты — 5 минут. Соңында «Аяқтау» бас.</li>
+        <li>Ұпайыңды оқытушыға көрсет.</li>
+      </ol>
+      <p class="note">Ұпай ережелері ойын соңында ашылады — өз біліміңмен жоспарла.</p>
+    </div>
+    <div class="card">
+      <input id="name" type="text" placeholder="Аты-жөнің" autocomplete="off">
+      <div style="height:12px"></div>
+      <button id="go">Бастау</button>
+    </div>
+  </div>
+
+  <!-- 2. Жоспарлау экраны -->
+  <div id="plan" class="hidden">
+    <div class="top">
+      <strong id="who"></strong>
+      <span class="timer" id="timer">5:00</span>
+    </div>
+    <div class="card" id="rows"></div>
+    <button id="finish">Аяқтау</button>
+  </div>
+
+  <!-- 3. Нәтиже экраны -->
+  <div id="result" class="hidden">
+    <div class="card score">
+      <div class="name" id="rName"></div>
+      <div class="big" id="rScore"></div>
+      <div class="note">ұпай / 16</div>
+      <div class="level" id="rLevel"></div>
+    </div>
+    <div class="card">
+      <h2>Ұпай қалай есептелді</h2>
+      <div id="rRules"></div>
+    </div>
+    <button class="ghost" id="again">Қайта ойнау</button>
+  </div>
+
+</div>
+
+<script>
+// 1. Іс-әрекеттер тізімі
+const ACTS = [
+  ["sleep",  "Ұйқы"],
+  ["study",  "Өзіндік оқу / үй тапсырмасы"],
+  ["sport",  "Спорт"],
+  ["food",   "Тамақ"],
+  ["road",   "Жол"],
+  ["phone",  "Телефон / әлеуметтік желі"],
+  ["rest",   "Демалыс / хобби"],
+  ["family", "Отбасы / достар"],
+  ["work",   "Жұмыс"],
+  ["book",   "Кітап оқу"],
+  ["plan",   "Күнді жоспарлау"]
+];
+const LESSON_HOURS = [9, 10, 11, 12, 13];
+
+let playerName = "";
+let timerId = null;
+
+// 2. Сағат жолдарын салу (06:00 – 24:00)
+function buildRows() {
+  const box = document.getElementById("rows");
+  box.innerHTML = "";
+  for (let h = 6; h < 24; h++) {
+    const row = document.createElement("div");
+    row.className = "row";
+    const label = String(h).padStart(2, "0") + ":00–" + String(h + 1).padStart(2, "0") + ":00";
+    row.innerHTML = '<span class="time">' + label + "</span>";
+
+    if (LESSON_HOURS.includes(h)) {
+      row.innerHTML += '<span class="fixed">Сабақ</span>';
+    } else {
+      const sel = document.createElement("select");
+      sel.dataset.hour = h;
+      sel.className = "empty";
+      sel.innerHTML = '<option value="">— таңда —</option>' +
+        ACTS.map(a => '<option value="' + a[0] + '">' + a[1] + "</option>").join("");
+      sel.onchange = () => sel.classList.toggle("empty", sel.value === "");
+      row.appendChild(sel);
+    }
+    box.appendChild(row);
+  }
+}
+
+// 3. 5 минуттық таймер
+function startTimer() {
+  let left = 300;
+  const t = document.getElementById("timer");
+  t.classList.remove("late");
+  t.textContent = "5:00";
+  clearInterval(timerId);
+  timerId = setInterval(() => {
+    left--;
+    if (left <= 0) {
+      clearInterval(timerId);
+      t.textContent = "Уақыт бітті!";
+      t.classList.add("late");
+      return;
+    }
+    t.textContent = Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0");
+    if (left <= 30) t.classList.add("late");
+  }, 1000);
+}
+
+// 4. Ұпай санау
+function score() {
+  // әр сағатта не таңдалғанын жинаймыз
+  const day = {};
+  document.querySelectorAll("#rows select").forEach(s => day[s.dataset.hour] = s.value);
+  const count = key => Object.values(day).filter(v => v === key).length;
+
+  const sleep = 6 + count("sleep");
+  const study = count("study");
+  const empty = count("");
+
+  // өзіндік оқу қатарынан ең көп неше сағат
+  let run = 0, maxRun = 0;
+  for (let h = 6; h < 24; h++) {
+    run = day[h] === "study" ? run + 1 : 0;
+    maxRun = Math.max(maxRun, run);
+  }
+  const morning = [6, 7, 8].some(h => ["sport", "book", "plan"].includes(day[h]));
+  const lateStudy = [22, 23].some(h => day[h] === "study");
+
+  const rules = [];
+  const add = (text, why, pts) => rules.push({ text, why, pts });
+
+  if (sleep >= 7 && sleep <= 9) add("Ұйқы: " + sleep + " сағат", "Демалыс — жүйенің бөлігі", 3);
+  else if (sleep < 7)           add("Ұйқы: " + sleep + " сағат — аз", "7 сағаттан аз ұйқы өнімділікті төмендетеді", -3);
+  else                          add("Ұйқы: " + sleep + " сағат — көп", "9 сағаттан көп ұйқы — жоғалған уақыт", -1);
+
+  add("«Ғажайып таң»: 6:00–9:00 арасында өзіңе уақыт (спорт, кітап, жоспар)", "Кореялықтардың «미라클 모닝» әдеті", morning ? 2 : 0);
+  add("Күнді жоспарлау бар", "Корей дәстүрі — күнді алдын ала бөлу", count("plan") > 0 ? 2 : 0);
+
+  if (study >= 2 && study <= 3) add("Өзіндік оқу: " + study + " сағат", "Оқу уақыты жеткілікті", 2);
+  else if (study === 0)         add("Өзіндік оқу жоқ", "Сабақтан тыс оқу — өзін-өзі дамыту", -2);
+  else                          add("Өзіндік оқу: " + study + " сағат", "Ең жақсысы — 2–3 сағат", 0);
+
+  add("Оқу қатарынан 2 сағаттан аспайды", "Ұзақтық емес, тығыздық: фокус-блок + үзіліс", study > 0 && maxRun <= 2 ? 2 : 0);
+  add("Спорт бар", "Денсаулық — тиімділіктің негізі", count("sport") > 0 ? 2 : 0);
+  add("Демалыс немесе отбасы / достар бар", "Ворабель — жұмыс пен өмір теңгерімі", count("rest") + count("family") > 0 ? 2 : 0);
+  add("Тамақ кемінде 2 рет", "Энергия күні бойы жетуі үшін", count("food") >= 2 ? 1 : 0);
+
+  if (count("phone") > 2) add("Телефон: " + count("phone") + " сағат", "2 сағаттан көп — уақыт ұрысы", -3);
+  if (lateStudy)          add("22:00-ден кейін оқу", "Түнгі «ппалли-ппалли» — ұйқыны ұрлайды", -1);
+  if (empty > 0)          add("Бос жол: " + empty, "Жоспарсыз сағат — жоғалған мүмкіндік", -empty);
+
+  const total = rules.reduce((s, r) => s + r.pts, 0);
+  return { total, rules };
+}
+
+// 5. Нәтижені көрсету
+function showResult() {
+  clearInterval(timerId);
+  const res = score();
+  document.getElementById("rName").textContent = playerName;
+  document.getElementById("rScore").textContent = res.total;
+
+  const lvl = document.getElementById("rLevel");
+  if (res.total >= 14)     { lvl.textContent = "Smart Student!";        lvl.style.background = "#1a8f4c"; }
+  else if (res.total >= 9) { lvl.textContent = "Жақсы бастама";         lvl.style.background = "#0047A0"; }
+  else                     { lvl.textContent = "Күнді қайта жоспарла";  lvl.style.background = "#CD2E3A"; }
+
+  document.getElementById("rRules").innerHTML = res.rules.map(r => {
+    const cls = r.pts > 0 ? "plus" : r.pts < 0 ? "minus" : "zero";
+    const sign = r.pts > 0 ? "+" + r.pts : String(r.pts);
+    return '<div class="rule"><span>' + r.text + '<span class="why">' + r.why + '</span></span>' +
+           '<span class="pts ' + cls + '">' + sign + "</span></div>";
+  }).join("");
+
+  show("result");
+}
+
+// 6. Экрандарды ауыстыру
+function show(id) {
+  ["start", "plan", "result"].forEach(s => document.getElementById(s).classList.toggle("hidden", s !== id));
+  window.scrollTo(0, 0);
+}
+
+document.getElementById("go").onclick = () => {
+  playerName = document.getElementById("name").value.trim();
+  if (!playerName) { document.getElementById("name").focus(); return; }
+  document.getElementById("who").textContent = playerName;
+  buildRows();
+  startTimer();
+  show("plan");
+};
+document.getElementById("finish").onclick = showResult;
+document.getElementById("again").onclick = () => show("start");
+</script>
+</body>
+</html>
